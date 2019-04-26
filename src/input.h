@@ -34,16 +34,24 @@ public:
 
 		Down = 2, Left = 4, Right = 6, Up = 8,
 
-		A = 11, B = 12, C = 13,
-		X = 14, Y = 15, Z = 16,
-		L = 17, R = 18,
+		A = 11, B = 12, C = 13, D = 14,
+		E = 15, F = 16, G = 17, H = 18,
+		I = 19, J = 20, K = 21, L = 22,
+		M = 23, N = 24, O = 25, P = 26,
+		Q = 27, R = 28, S = 29, T = 30,
+		U = 31, V = 32, W = 33, X = 34,
+		Y = 35, Z = 36,
 
-		Shift = 21, Ctrl = 22, Alt = 23,
+		Shift = 37, Ctrl = 38, Alt = 39,
 
-		F5 = 25, F6 = 26, F7 = 27, F8 = 28, F9 = 29,
+		Escape = 40, Return = 41, Space = 42,
 
-		/* Non-standard extensions */
-		MouseLeft = 38, MouseMiddle = 39, MouseRight = 40
+		F1 = 43, F2 = 44,  F3 = 45,  F4 = 46,
+		F5 = 47, F6 = 48,  F7 = 49,  F8 = 50,
+		F9 = 51, F10 = 52, F11 = 53, F12 = 54,
+
+		// Non-standard extensions
+		MouseLeft = 55, MouseMiddle = 56, MouseRight = 57
 	};
 
 	void update();

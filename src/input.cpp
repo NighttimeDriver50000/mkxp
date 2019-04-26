@@ -33,7 +33,7 @@
 #include <string.h>
 #include <assert.h>
 
-#define BUTTON_CODE_COUNT 24
+#define BUTTON_CODE_COUNT 49
 
 struct ButtonState
 {
@@ -211,29 +211,65 @@ static const KbBindingData staticKbBindings[] =
 	{ SDL_SCANCODE_RCTRL,  Input::Ctrl  },
 	{ SDL_SCANCODE_LALT,   Input::Alt   },
 	{ SDL_SCANCODE_RALT,   Input::Alt   },
+	{ SDL_SCANCODE_F1,     Input::F1    },
+	{ SDL_SCANCODE_F2,     Input::F2    },
+	{ SDL_SCANCODE_F3,     Input::F3    },
+	{ SDL_SCANCODE_F4,     Input::F4    },
 	{ SDL_SCANCODE_F5,     Input::F5    },
 	{ SDL_SCANCODE_F6,     Input::F6    },
 	{ SDL_SCANCODE_F7,     Input::F7    },
 	{ SDL_SCANCODE_F8,     Input::F8    },
-	{ SDL_SCANCODE_F9,     Input::F9    }
+	{ SDL_SCANCODE_F9,     Input::F9    },
+	{ SDL_SCANCODE_F10,    Input::F10   },
+	{ SDL_SCANCODE_F11,    Input::F11   },
+	{ SDL_SCANCODE_F12,    Input::F12   }
 };
 
 static elementsN(staticKbBindings);
 
 /* Maps ButtonCode enum values to indices
  * in the button state array */
+
 static const int mapToIndex[] =
 {
-	0, 0,
+	0, 0,	
+	// down, left, right, up (2,4,6,8)
 	1, 0, 2, 0, 3, 0, 4, 0,
+
 	0,
-	5, 6, 7, 8, 9, 10, 11, 12,
+	// a-d (11-14)
+	5, 6, 7, 8,
+	// e-h (15-18)
+	9, 10, 11, 12,
+	// i-l (19-22)
+	13, 14, 15, 16,
+	// m-p (23-26)
+	17, 18, 19, 20,
+	// q-t (27-30)
+	21, 22, 23, 24,
+	// u-x (31-34)
+	25, 26, 27, 28,
+	// y-z (35-36)
+	29, 30,
+
 	0, 0,
-	13, 14, 15,
+	// shift, ctrl, alt (37-39)
+	31, 32, 33,
+
+	// escape, return, space (40-42)
+	34, 35, 36,
+
 	0,
-	16, 17, 18, 19, 20,
+	// f1-f4 (43-46)
+	37, 38, 39, 40,
+	// f5-f8 (47-50)
+	41, 42, 43, 44,
+	// f9-f12 (51-54)
+	45, 46, 47, 48,
+
 	0, 0, 0, 0, 0, 0, 0, 0,
-	21, 22, 23
+	// mouse (55-57)
+	49, 50, 51
 };
 
 static elementsN(mapToIndex);

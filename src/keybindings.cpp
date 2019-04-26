@@ -67,21 +67,40 @@ struct JsBindingData
 /* Common */
 static const KbBindingData defaultKbBindings[] =
 {
-	{ SDL_SCANCODE_LEFT,   Input::Left  },
-	{ SDL_SCANCODE_RIGHT,  Input::Right },
-	{ SDL_SCANCODE_UP,     Input::Up    },
-	{ SDL_SCANCODE_DOWN,   Input::Down  },
-	{ SDL_SCANCODE_SPACE,  Input::C     },
-	{ SDL_SCANCODE_RETURN, Input::C     },
-	{ SDL_SCANCODE_ESCAPE, Input::B     },
-	{ SDL_SCANCODE_KP_0,   Input::B     },
-	{ SDL_SCANCODE_LSHIFT, Input::A     },
-	{ SDL_SCANCODE_X,      Input::B     },
-	{ SDL_SCANCODE_D,      Input::Z     },
-	{ SDL_SCANCODE_Q,      Input::L     },
-	{ SDL_SCANCODE_W,      Input::R     },
-	{ SDL_SCANCODE_A,      Input::X     },
-	{ SDL_SCANCODE_S,      Input::Y     }
+	{ SDL_SCANCODE_LEFT,   Input::Left   },
+	{ SDL_SCANCODE_RIGHT,  Input::Right  },
+	{ SDL_SCANCODE_UP,     Input::Up     },
+	{ SDL_SCANCODE_DOWN,   Input::Down   },
+	{ SDL_SCANCODE_SPACE,  Input::Space  },
+	{ SDL_SCANCODE_RETURN, Input::Return },
+	{ SDL_SCANCODE_ESCAPE, Input::Escape },
+	{ SDL_SCANCODE_LSHIFT, Input::Shift },
+	{ SDL_SCANCODE_A,      Input::A     },
+	{ SDL_SCANCODE_B,      Input::B     },
+	{ SDL_SCANCODE_C,      Input::C     },
+	{ SDL_SCANCODE_D,      Input::D     },
+	{ SDL_SCANCODE_E,      Input::E     },
+	{ SDL_SCANCODE_F,      Input::F     },
+	{ SDL_SCANCODE_G,      Input::G     },
+	{ SDL_SCANCODE_H,      Input::H     },
+	{ SDL_SCANCODE_I,      Input::I     },
+	{ SDL_SCANCODE_J,      Input::J     },
+	{ SDL_SCANCODE_K,      Input::K     },
+	{ SDL_SCANCODE_L,      Input::L     },
+	{ SDL_SCANCODE_M,      Input::M     },
+	{ SDL_SCANCODE_N,      Input::N     },
+	{ SDL_SCANCODE_O,      Input::O     },
+	{ SDL_SCANCODE_P,      Input::P     },
+	{ SDL_SCANCODE_Q,      Input::Q     },
+	{ SDL_SCANCODE_R,      Input::R     },
+	{ SDL_SCANCODE_S,      Input::S     },
+	{ SDL_SCANCODE_T,      Input::T     },
+	{ SDL_SCANCODE_U,      Input::U     },
+	{ SDL_SCANCODE_V,      Input::V     },
+	{ SDL_SCANCODE_W,      Input::W     },
+	{ SDL_SCANCODE_X,      Input::X     },
+	{ SDL_SCANCODE_Y,      Input::Y     },
+	{ SDL_SCANCODE_Z,      Input::Z     },
 };
 
 /* RGSS1 */
@@ -150,6 +169,7 @@ BDescVec genDefaultBindings(const Config &conf)
 	for (size_t i = 0; i < defaultKbBindingsN; ++i)
 		defaultKbBindings[i].add(d);
 
+	/*remove
 	if (conf.rgssVersion == 1)
 		for (size_t i = 0; i < defaultKbBindings1N; ++i)
 			defaultKbBindings1[i].add(d);
@@ -158,7 +178,7 @@ BDescVec genDefaultBindings(const Config &conf)
 			defaultKbBindings2[i].add(d);
 
 	for (size_t i = 0; i < defaultJsBindingsN; ++i)
-		defaultJsBindings[i].add(d);
+		defaultJsBindings[i].add(d);*/
 
 	addAxisBinding(d, 0, Negative, Input::Left );
 	addAxisBinding(d, 0, Positive, Input::Right);
@@ -239,11 +259,18 @@ static bool verifyDesc(const BindingDesc &desc)
 	{
 	    Input::None,
 	    Input::Down, Input::Left, Input::Right, Input::Up,
-	    Input::A, Input::B, Input::C,
-	    Input::X, Input::Y, Input::Z,
-	    Input::L, Input::R,
+	    Input::A, Input::B, Input::C, Input::D,
+	    Input::E, Input::F, Input::G, Input::H,
+	    Input::I, Input::J, Input::K, Input::L,
+	    Input::M, Input::N, Input::O, Input::P,
+	    Input::Q, Input::R, Input::S, Input::T,
+	    Input::U, Input::V, Input::W, Input::X,
+	    Input::Y, Input::Z,
 	    Input::Shift, Input::Ctrl, Input::Alt,
-	    Input::F5, Input::F6, Input::F7, Input::F8, Input::F9
+	    Input::Escape, Input::Return, Input::Space,
+	    Input::F1, Input::F2, Input::F3, Input::F4,
+	    Input::F5, Input::F6, Input::F7, Input::F8,
+	    Input::F9, Input::F10, Input::F11, Input::F12
 	};
 
 	elementsN(codes);

@@ -177,10 +177,10 @@ static void setupWindowIcon(const Config &conf, SDL_Window *win)
 {
 	SDL_RWops *iconSrc;
 
-	if (conf.iconPath.empty())
-		iconSrc = SDL_RWFromConstMem(assets_icon_png, assets_icon_png_len);
-	else
-		iconSrc = SDL_RWFromFile(conf.iconPath.c_str(), "rb");
+	iconSrc = SDL_RWFromConstMem(assets_icon_png, assets_icon_png_len);
+  Debug() << "assets_icon_png : " << assets_icon_png;
+  Debug() << "assets_icon_png_len : " << assets_icon_png_len;
+  Debug() << "iconSrc : " << iconSrc;
 
 	SDL_Surface *iconImg = IMG_Load_RW(iconSrc, SDL_TRUE);
 
@@ -235,6 +235,10 @@ int main(int argc, char *argv[])
 
 	if (conf.windowTitle.empty())
 		conf.windowTitle = conf.game.title;
+
+  for (int i = 0; i < argc; i++){
+    Debug() << "argv[" << i << "] :" << argv[i];
+  }
 
 	assert(conf.rgssVersion >= 1 && conf.rgssVersion <= 3);
 	printRgssVersion(conf.rgssVersion);
