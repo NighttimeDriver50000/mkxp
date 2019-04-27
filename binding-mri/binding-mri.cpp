@@ -204,7 +204,7 @@ RB_METHOD(mriP)
 RB_METHOD(mkxpDataDirectory)
 {
 	RB_UNUSED_PARAM;
-	
+
 	const std::string &path = shState->config().customDataPath;
 	const char *s = path.empty() ? "." : path.c_str();
 
@@ -368,6 +368,20 @@ static void runCustomScript(const std::string &filename)
 	           newStringUTF8(filename.c_str(), filename.size()), NULL);
 }
 
+static void runStartScript()
+{
+	rb_define_global_const("SCREENWIDTH", INT2NUM(480));
+	rb_define_global_const("SCREENHEIGHT", INT2NUM(320));
+	shState->graphics().resizeScreen(480, 320);
+
+	VALUE gv;
+	gv = rb_gv_get("$LOAD_PATH");
+	rb_ary_push(gv, rb_str_new_cstr("ruby/extensions/2.5.0"));
+	rb_ary_push(gv, rb_str_new_cstr("ruby/extensions/2.5.0/i386-mingw32"));
+
+	runCustomScript("ruby/scripts/requires.rb");
+}
+
 VALUE kernelLoadDataInt(const char *filename, bool rubyExc);
 
 struct BacktraceData
@@ -375,144 +389,6 @@ struct BacktraceData
 	/* Maps: Ruby visible filename, To: Actual script name */
 	BoostHash<std::string, std::string> scriptNames;
 };
-
-#define SCRIPT_SECTION_FMT (rgssVer >= 3 ? "{%04ld}" : "Section%03ld")
-
-static void runRMXPScripts(BacktraceData &btData)
-{
-	const Config &conf = shState->rtData().config;
-	const std::string &scriptPack = conf.game.scripts;
-
-	if (scriptPack.empty())
-	{
-		showMsg("No game scripts specified (missing Game.ini?)");
-		return;
-	}
-
-	if (!shState->fileSystem().exists(scriptPack.c_str()))
-	{
-		showMsg("Unable to open '" + scriptPack + "'");
-		return;
-	}
-
-	VALUE scriptArray;
-
-	/* We checked if Scripts.rxdata exists, but something might
-	 * still go wrong */
-	try
-	{
-		scriptArray = kernelLoadDataInt(scriptPack.c_str(), false);
-	}
-	catch (const Exception &e)
-	{
-		showMsg(std::string("Failed to read script data: ") + e.msg);
-		return;
-	}
-
-	if (!RB_TYPE_P(scriptArray, RUBY_T_ARRAY))
-	{
-		showMsg("Failed to read script data");
-		return;
-	}
-
-	rb_gv_set("$RGSS_SCRIPTS", scriptArray);
-
-	long scriptCount = RARRAY_LEN(scriptArray);
-
-	std::string decodeBuffer;
-	decodeBuffer.resize(0x1000);
-
-	for (long i = 0; i < scriptCount; ++i)
-	{
-		VALUE script = rb_ary_entry(scriptArray, i);
-
-		if (!RB_TYPE_P(script, RUBY_T_ARRAY))
-			continue;
-
-		VALUE scriptName   = rb_ary_entry(script, 1);
-		VALUE scriptString = rb_ary_entry(script, 2);
-
-		int result = Z_OK;
-		unsigned long bufferLen;
-
-		while (true)
-		{
-			unsigned char *bufferPtr =
-			        reinterpret_cast<unsigned char*>(const_cast<char*>(decodeBuffer.c_str()));
-			const unsigned char *sourcePtr =
-			        reinterpret_cast<const unsigned char*>(RSTRING_PTR(scriptString));
-
-			bufferLen = decodeBuffer.length();
-
-			result = uncompress(bufferPtr, &bufferLen,
-			                    sourcePtr, RSTRING_LEN(scriptString));
-
-			bufferPtr[bufferLen] = '\0';
-
-			if (result != Z_BUF_ERROR)
-				break;
-
-			decodeBuffer.resize(decodeBuffer.size()*2);
-		}
-
-		if (result != Z_OK)
-		{
-			static char buffer[256];
-			snprintf(buffer, sizeof(buffer), "Error decoding script %ld: '%s'",
-			         i, RSTRING_PTR(scriptName));
-
-			showMsg(buffer);
-
-			break;
-		}
-
-		rb_ary_store(script, 3, rb_str_new_cstr(decodeBuffer.c_str()));
-	}
-
-	/* Execute preloaded scripts */
-	for (std::set<std::string>::iterator i = conf.preloadScripts.begin();
-	     i != conf.preloadScripts.end(); ++i)
-		runCustomScript(*i);
-
-	VALUE exc = rb_gv_get("$!");
-	if (exc != Qnil)
-		return;
-
-	while (true)
-	{
-		for (long i = 0; i < scriptCount; ++i)
-		{
-			VALUE script = rb_ary_entry(scriptArray, i);
-			VALUE scriptDecoded = rb_ary_entry(script, 3);
-			VALUE string = newStringUTF8(RSTRING_PTR(scriptDecoded),
-			                             RSTRING_LEN(scriptDecoded));
-
-			VALUE fname;
-			const char *scriptName = RSTRING_PTR(rb_ary_entry(script, 1));
-			char buf[512];
-			int len;
-
-			if (conf.useScriptNames)
-				len = snprintf(buf, sizeof(buf), "%03ld:%s", i, scriptName);
-			else
-				len = snprintf(buf, sizeof(buf), SCRIPT_SECTION_FMT, i);
-
-			fname = newStringUTF8(buf, len);
-			btData.scriptNames.insert(buf, scriptName);
-
-			int state;
-			evalString(string, fname, &state);
-			if (state)
-				break;
-		}
-
-		VALUE exc = rb_gv_get("$!");
-		if (rb_obj_class(exc) != getRbData()->exc[Reset])
-			break;
-
-		processReset();
-	}
-}
 
 static void showExc(VALUE exc, const BacktraceData &btData)
 {
@@ -607,11 +483,7 @@ static void mriBindingExecute()
 
 	mriBindingInit();
 
-	std::string &customScript = conf.customScript;
-	if (!customScript.empty())
-		runCustomScript(customScript);
-	else
-		runRMXPScripts(btData);
+	runStartScript();
 
 	VALUE exc = rb_errinfo();
 	if (!NIL_P(exc) && !rb_obj_is_kind_of(exc, rb_eSystemExit))

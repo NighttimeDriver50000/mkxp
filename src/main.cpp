@@ -178,9 +178,6 @@ static void setupWindowIcon(const Config &conf, SDL_Window *win)
 	SDL_RWops *iconSrc;
 
 	iconSrc = SDL_RWFromConstMem(assets_icon_png, assets_icon_png_len);
-  Debug() << "assets_icon_png : " << assets_icon_png;
-  Debug() << "assets_icon_png_len : " << assets_icon_png_len;
-  Debug() << "iconSrc : " << iconSrc;
 
 	SDL_Surface *iconImg = IMG_Load_RW(iconSrc, SDL_TRUE);
 
