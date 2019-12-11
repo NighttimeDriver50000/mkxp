@@ -376,8 +376,31 @@ static void runStartScript()
 
 	VALUE gv;
 	gv = rb_gv_get("$LOAD_PATH");
+#if defined(_WIN32)
 	rb_ary_push(gv, rb_str_new_cstr("ruby/extensions/2.5.0"));
 	rb_ary_push(gv, rb_str_new_cstr("ruby/extensions/2.5.0/i386-mingw32"));
+#elif defined(__linux__)
+	rb_ary_push(gv, rb_str_new_cstr("/usr/share/rubygems-integration/all/gems/did_you_mean-1.2.0/lib"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/local/lib/site_ruby/2.5.0"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/local/lib/x86_64-linux-gnu/site_ruby"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/local/lib/site_ruby"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/ruby/vendor_ruby/2.5.0"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/x86_64-linux-gnu/ruby/vendor_ruby/2.5.0"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/ruby/vendor_ruby"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/ruby/2.5.0"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/x86_64-linux-gnu/ruby/2.5.0"));
+	printf("$LOAD_PATH:\n");
+	for (long i = 0; i < RARRAY_LEN(gv); ++i)
+	{
+		VALUE path_rbstr = rb_ary_entry(gv, i);
+		long len = RSTRING_LEN(path_rbstr);
+		char *path_bytes = rb_str_subpos(path_rbstr, 0, &len);
+		char *path_cstr = (char *)calloc(len + 1, 1);
+		memcpy(path_cstr, path_bytes, len);
+		printf("[%ld]: %s\n", i, path_cstr);
+		free(path_cstr);
+	}
+#endif
 
 	runCustomScript("ruby/scripts/requires.rb");
 }
