@@ -381,14 +381,24 @@ static void runStartScript()
 	rb_ary_push(gv, rb_str_new_cstr("ruby/extensions/2.5.0/i386-mingw32"));
 #elif defined(__linux__)
 	rb_ary_push(gv, rb_str_new_cstr("/usr/share/rubygems-integration/all/gems/did_you_mean-1.2.0/lib"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/share/rubygems-integration/all/gems/did_you_mean-1.3.0/lib"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/share/gems/gems/did_you_mean-1.2.0/lib"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/share/gems/gems/did_you_mean-1.3.0/lib"));
 	rb_ary_push(gv, rb_str_new_cstr("/usr/local/lib/site_ruby/2.5.0"));
 	rb_ary_push(gv, rb_str_new_cstr("/usr/local/lib/x86_64-linux-gnu/site_ruby"));
 	rb_ary_push(gv, rb_str_new_cstr("/usr/local/lib/site_ruby"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/local/share/ruby/site_ruby"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/local/lib64/ruby/site_ruby"));
 	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/ruby/vendor_ruby/2.5.0"));
 	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/x86_64-linux-gnu/ruby/vendor_ruby/2.5.0"));
 	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/ruby/vendor_ruby"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/share/ruby/vendor_ruby"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/lib64/ruby/vendor_ruby"));
 	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/ruby/2.5.0"));
 	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/x86_64-linux-gnu/ruby/2.5.0"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/share/rubygems"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/share/ruby"));
+	rb_ary_push(gv, rb_str_new_cstr("/usr/lib64/ruby"));
 	printf("$LOAD_PATH:\n");
 	for (long i = 0; i < RARRAY_LEN(gv); ++i)
 	{
