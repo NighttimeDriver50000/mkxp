@@ -368,51 +368,94 @@ static void runCustomScript(const std::string &filename)
 	           newStringUTF8(filename.c_str(), filename.size()), NULL);
 }
 
-static void runStartScript()
+static void printLoadPath(VALUE *gv)
 {
-	rb_define_global_const("SCREENWIDTH", INT2NUM(480));
-	rb_define_global_const("SCREENHEIGHT", INT2NUM(320));
-	shState->graphics().resizeScreen(480, 320);
+        printf("$LOAD_PATH:\n");
+        for (long i = 0; i < RARRAY_LEN(*gv); ++i)
+        {
+                VALUE path_rbstr = rb_ary_entry(*gv, i);
+                long len = RSTRING_LEN(path_rbstr);
+                char *path_bytes = rb_str_subpos(path_rbstr, 0, &len);
+                char *path_cstr = (char *)calloc(len + 1, 1);
+                memcpy(path_cstr, path_bytes, len);
+                printf("[%ld]: %s\n", i, path_cstr);
+                free(path_cstr);
+        }
+}
 
-	VALUE gv;
-	gv = rb_gv_get("$LOAD_PATH");
-#if defined(_WIN32)
-	rb_ary_push(gv, rb_str_new_cstr("ruby/extensions/2.5.0"));
-	rb_ary_push(gv, rb_str_new_cstr("ruby/extensions/2.5.0/i386-mingw32"));
-#elif defined(__linux__)
-	rb_ary_push(gv, rb_str_new_cstr("/usr/share/rubygems-integration/all/gems/did_you_mean-1.2.0/lib"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/share/rubygems-integration/all/gems/did_you_mean-1.3.0/lib"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/share/gems/gems/did_you_mean-1.2.0/lib"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/share/gems/gems/did_you_mean-1.3.0/lib"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/local/lib/site_ruby/2.5.0"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/local/lib/x86_64-linux-gnu/site_ruby"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/local/lib/site_ruby"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/local/share/ruby/site_ruby"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/local/lib64/ruby/site_ruby"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/ruby/vendor_ruby/2.5.0"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/x86_64-linux-gnu/ruby/vendor_ruby/2.5.0"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/ruby/vendor_ruby"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/share/ruby/vendor_ruby"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/lib64/ruby/vendor_ruby"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/ruby/2.5.0"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/lib/x86_64-linux-gnu/ruby/2.5.0"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/share/rubygems"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/share/ruby"));
-	rb_ary_push(gv, rb_str_new_cstr("/usr/lib64/ruby"));
-	printf("$LOAD_PATH:\n");
-	for (long i = 0; i < RARRAY_LEN(gv); ++i)
-	{
-		VALUE path_rbstr = rb_ary_entry(gv, i);
-		long len = RSTRING_LEN(path_rbstr);
-		char *path_bytes = rb_str_subpos(path_rbstr, 0, &len);
-		char *path_cstr = (char *)calloc(len + 1, 1);
-		memcpy(path_cstr, path_bytes, len);
-		printf("[%ld]: %s\n", i, path_cstr);
-		free(path_cstr);
-	}
+#if defined(__linux__)
+static void pushLinuxPaths(VALUE *gv)
+{
+        /*
+                Add the following paths (pulled from the default Ubuntu 18.04 and
+                Fedora 31 Ruby installs) to the Ruby $LOAD_PATH, prefixing them with
+                APPDIR if running in an AppImage.
+        */
+        const char *paths[] = {
+                "/usr/share/rubygems-integration/all/gems/did_you_mean-1.2.0/lib",
+                "/usr/share/rubygems-integration/all/gems/did_you_mean-1.3.0/lib",
+                "/usr/share/gems/gems/did_you_mean-1.2.0/lib",
+                "/usr/share/gems/gems/did_you_mean-1.3.0/lib",
+                "/usr/local/lib/site_ruby/2.5.0",
+                "/usr/local/lib/x86_64-linux-gnu/site_ruby",
+                "/usr/local/lib/i386-linux-gnu/site_ruby",
+                "/usr/local/lib/site_ruby",
+                "/usr/local/share/ruby/site_ruby",
+                "/usr/local/lib64/ruby/site_ruby",
+                "/usr/local/lib32/ruby/site_ruby",
+                "/usr/lib/ruby/vendor_ruby/2.5.0",
+                "/usr/lib/x86_64-linux-gnu/ruby/vendor_ruby/2.5.0",
+                "/usr/lib/i386-linux-gnu/ruby/vendor_ruby/2.5.0",
+                "/usr/lib/ruby/vendor_ruby",
+                "/usr/share/ruby/vendor_ruby",
+                "/usr/lib64/ruby/vendor_ruby",
+                "/usr/lib32/ruby/vendor_ruby",
+                "/usr/lib/ruby/2.5.0",
+                "/usr/lib/x86_64-linux-gnu/ruby/2.5.0",
+                "/usr/lib/i386-linux-gnu/ruby/2.5.0",
+                "/usr/share/rubygems",
+                "/usr/share/ruby",
+                "/usr/lib64/ruby",
+                "/usr/lib32/ruby"
+        };
+        const char *appdir = getenv("APPDIR");
+        size_t appdir_len = strlen(appdir);
+        for (const char *path : paths)
+        {
+                if (appdir)
+                {
+                        size_t path_len = strlen(path);
+                        char *app_path = (char *)calloc(appdir_len + path_len + 1, 1);
+                        memcpy(app_path, appdir, appdir_len);
+                        memcpy(app_path + appdir_len, path, path_len);
+                        rb_ary_push(*gv, rb_str_new_cstr(app_path));
+                        free(app_path);
+                }
+		else
+		{
+                	rb_ary_push(*gv, rb_str_new_cstr(path));
+		}
+        }
+}
 #endif
 
-	runCustomScript("ruby/scripts/requires.rb");
+static void runStartScript()
+{
+        rb_define_global_const("SCREENWIDTH", INT2NUM(480));
+        rb_define_global_const("SCREENHEIGHT", INT2NUM(320));
+        shState->graphics().resizeScreen(480, 320);
+
+        VALUE gv;
+        gv = rb_gv_get("$LOAD_PATH");
+#if defined(_WIN32)
+        rb_ary_push(gv, rb_str_new_cstr("ruby/extensions/2.5.0"));
+        rb_ary_push(gv, rb_str_new_cstr("ruby/extensions/2.5.0/i386-mingw32"));
+#elif defined(__linux__)
+        pushLinuxPaths(&gv);
+#endif
+        printLoadPath(&gv);
+
+        runCustomScript("ruby/scripts/requires.rb");
 }
 
 VALUE kernelLoadDataInt(const char *filename, bool rubyExc);
